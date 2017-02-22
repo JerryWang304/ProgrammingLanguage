@@ -125,7 +125,28 @@ fun dates_in_months_challenge(dates: (int*int*int) list, months: int list) =
    dates_in_months(dates,no_duplicate(months,[]))
 (* 13: challenge *)
 fun reasonable_date(year, month, day) = 
-  if year <= 0 orelse month <=0 orelse month >12 orelse day <=0 orelse day > 31
-  then false
-  else if is_leap(year) 
-         
+  let 
+    val leap_months = [31,29,31,30,31,30,31,31,30,31,30,31];
+  
+    val no_leap_months = [31,28,31,30,31,30,31,31,30,31,30,31];
+    
+    fun is_leap(year: int) =
+      if year mod 400 = 0 orelse (year mod 4 = 0 andalso year mod 100 <> 0)
+      then true
+      else false 
+
+   
+    fun get_nth_month(ms:int list, num: int) = 
+      if num = 1
+      then hd ms
+      else get_nth_month(tl ms, num-1)
+
+  in
+    if year <= 0 orelse month <=0 orelse month >12 orelse day <=0 orelse day > 31
+    then false
+    else if is_leap(year) andalso day > get_nth_month(leap_months,month)
+         then false  
+         else if not (is_leap(year)) andalso day > get_nth_month(no_leap_months,month)
+              then false
+              else true 
+  end  
