@@ -79,16 +79,16 @@ exception IllegalMove
 (* 2-a *)
 fun card_color card = 
   case card of
-       Spades => Black 
-     | Clubs => Black 
-     | Diamonds => Red 
-     | Hearts => Red 
+       (Spades, _) => Black 
+     | (Clubs,_) => Black 
+     | (Diamonds,_) => Red 
+     | (Hearts,_) => Red 
 
 (* 2-b *)
 fun card_value card = 
   case card of
-       Ace => 11
-     | Num n => n
+       (_, Ace) => 11
+     | (_, Num n) => n
      | _ => 10
 
 (* 2-c *)
@@ -109,10 +109,21 @@ fun remove_card(cs, c, e) = (* cs: card list, c: card, e: exception *)
 
 (* 2-d *)
 fun all_same_color cards = 
-  case cards of
+  let 
+    fun same_color(card1, card2) = 
+      case (card1,card2) of
+           ((Hearts, _), (Hearts, _))   => true
+         | ((Spades, _), (Spades, _))   => true
+         | ((Clubs,_), (Clubs,_))       => true
+         | ((Diamonds,_), (Diamonds,_))  => true
+         | _ => false 
+  in 
+    case cards of
        [] => true 
      | _::[] => true 
-     | a::(b::tail) => if a <> b then false else all_same_color(b::tail)
+     | a::(b::tail) => if same_color(a,b) then all_same_color(b::tail) else
+       false 
+  end
 
 (* 2-e *)
 fun sum_cards cards = 
@@ -134,7 +145,7 @@ fun sum_cards cards =
 fun score(cards, goal) = 
   let
     val sum = sum_cards(cards)
-    val pre_score = if sum > goal then 3*(sum-goal) else sum-goal
+    val pre_score = if sum > goal then 3*(sum-goal) else goal-sum
   in
     if all_same_color(cards)
     then pre_score div 2
@@ -142,4 +153,36 @@ fun score(cards, goal) =
   end
 
 (* 2-g *)
-fun officiate(card_list, move_list, goal)
+(* card_list: all the cards in front of the player 
+ * move_list: the given operation sequences, which could be Draw of Discard(some
+ * card)
+ * *)
+
+fun officiate(card_list, move_list, goal) = 
+  let
+    fun state(card_list, move_list, goal,held_list) = 
+      case move_list of
+           [] => score(held_list, goal)
+         | Draw::next_movements => (case card_list of
+                                      [] => score(held_list,goal)
+                                      | head::left_cards => if sum_cards(held_list) +
+                                                    card_value(head) > goal
+                                                  then score(head::held_list, goal) 
+                                                  else state(left_cards, next_movements, goal,head::held_list))
+        | (Discard card)::next_movements => 
+            let 
+              fun is_in(cards, c) = 
+                case cards of
+                     [] => false
+                   | head::tail => if head = c then true else
+                     is_in(tail,c)
+
+            in
+              if false = is_in(held_list, card)
+              then raise IllegalMove 
+              else state(card_list, next_movements, goal, remove_card(held_list, card, IllegalMove))
+            end
+
+  in
+      state(card_list, move_list, goal, [])
+  end
