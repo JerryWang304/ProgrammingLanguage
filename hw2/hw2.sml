@@ -109,21 +109,10 @@ fun remove_card(cs, c, e) = (* cs: card list, c: card, e: exception *)
 
 (* 2-d *)
 fun all_same_color cards = 
-  let 
-    fun same_color(card1, card2) = 
-      case (card1,card2) of
-           ((Hearts, _), (Hearts, _))   => true
-         | ((Spades, _), (Spades, _))   => true
-         | ((Clubs,_), (Clubs,_))       => true
-         | ((Diamonds,_), (Diamonds,_))  => true
-         | _ => false 
-  in 
     case cards of
        [] => true 
      | _::[] => true 
-     | a::(b::tail) => if same_color(a,b) then all_same_color(b::tail) else
-       false 
-  end
+     | a::(b::tail) => if card_color(a) = card_color(b) then all_same_color(b::tail) else false
 
 (* 2-e *)
 fun sum_cards cards = 
