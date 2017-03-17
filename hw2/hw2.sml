@@ -50,9 +50,13 @@ fun get_substitutions2(listss, str) =
 (* 1-d *)
 fun similar_names(listss, full_name) = 
   let
+    (*
     val first_names = get_substitutions2(listss, #first full_name)
     val middle_name = #middle full_name 
     val last_name = #last full_name 
+     *)
+    val {first=f,middle=middle_name,last=last_name} = full_name;
+    val first_names = get_substitutions2(listss, f);
     fun helper(names,ret) = 
       case names of 
 
@@ -111,6 +115,7 @@ fun remove_card(cs, c, e) = (* cs: card list, c: card, e: exception *)
 fun all_same_color cards = 
     case cards of
        [] => true 
+    (* [_] => true *)
      | _::[] => true 
      | a::(b::tail) => if card_color(a) = card_color(b) then all_same_color(b::tail) else false
 
